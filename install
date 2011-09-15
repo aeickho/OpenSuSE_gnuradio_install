@@ -1,0 +1,184 @@
+## Install libs supportet from OpenSuSE
+
+sudo zypper in \
+SDL-devel \
+alsa-devel \
+autoconf \
+automake \
+bison \
+boost-devel \
+doxygen \
+fftw3-devel \
+flex \
+git \
+gsl-devel \
+guile \
+libcppunit-devel \
+libjack-devel \
+libqt4-devel \
+libtool \
+libusb-1_0-devel \
+libusb-0_1-4 \
+libusb-compat-devel \
+libxslt-python \
+make \
+portaudio-devel \
+python-devel \
+python-devel \
+python-gtk-devel \
+python-lxml \
+python-opengl \
+python-qt4-devel \
+python-wxGTK \
+qgit \
+swig
+
+## Latex???  
+
+
+# create work folder
+mkdir work
+cd work
+
+# in case of x64 add this link (lib trouble)
+sudo ln -s /usr/local/lib64/python2.7/ /usr/local/lib/python2.7
+
+#check path in /etc/ld.so.conf
+#/usr/local/lib
+
+
+# install numpy  1.6.1
+# http://sourceforge.net/projects/numpy/files/NumPy/1.6.1/numpy-1.6.1.tar.gz/download
+
+wget http://artbanause.de/mirror/numpy-1.6.1.tar.gz
+tar xzf numpy-1.6.1.tar.gz
+cd numpy-1.6.1
+sudo python setup.py install
+cd ..
+
+
+# install Cheetah 2.4.4
+wget http://pypi.python.org/packages/source/C/Cheetah/Cheetah-2.4.4.tar.gz
+tar xzf Cheetah-2.4.4.tar.gz
+cd  Cheetah-2.4.4
+sudo python setup.py install
+cd ..
+
+
+# install qwt 5.2.2
+#http://sourceforge.net/projects/qwt/files/qwt/5.2.2/
+
+wget http://artbanause.de/mirror/qwt-5.2.2.tar.bz2
+tar xjf qwt-5.2.2.tar.bz2
+cd qwt-5.2.2
+
+##patch
+> diff -d qwt-5.2.2/qwtconfig.pri qwt-5.2.2_org//qwtconfig.pri
+11c11
+<     INSTALLBASE    = /usr/local/
+---
+>     INSTALLBASE    = /usr/local/qwt-$$VERSION
+19c19
+< headers.path   = $$INSTALLBASE/include/qwt
+---
+> headers.path   = $$INSTALLBASE/include
+
+qmake
+make
+sudo make install
+cd ..
+
+
+# qwtplot3d 0.2.7
+# http://qwtplot3d.sourceforge.net/web/navigation/download_frame.html
+wget http://artbanause.de/mirror/qwtplot3d-0.2.7.zip
+unzip qwtplot3d-0.2.7.zip
+cd qwtplot3d
+
+##patch 
+diff src/qwt3d_function.cpp src/qwt3d_function.cpp~
+80c80
+< //            fprintf(stderr,"Function: no valid Plot3D Widget assigned");
+---
+>               fprintf(stderr,"Function: no valid Plot3D Widget assigned");
+
+qmake
+make
+sudo mkdir /usr/local/include/qwtplot3d
+(cd include; tar cf - . | (cd /usr/local/include/qwtplot3d; sudo tar xf -))
+tar cf - lib | (cd /usr/local; sudo tar xf -)
+cd ..
+
+
+# pyqwt 5.2.0
+#http://pyqwt.sourceforge.net/download.html
+wget http://artbanause.de/mirror/PyQwt-5.2.0.tar.gz
+tar xzf PyQwt-5.2.0.tar.gz
+cd PyQwt-5.2.0
+cd configure
+python configure.py -Q ../qwt-5.2
+make
+sudo make install
+sudo /sbin/ldconfig
+cd ..
+cd ..
+
+
+# sdcc 2.9
+######################
+http://sdcc.sf.net
+
+# http://sourceforge.net/projects/sdcc/files/sdcc/2.9.0/
+# can't compile from src
+
+
+# download x32 binary version
+#http://sourceforge.net/projects/sdcc/files/sdcc-linux-x86/2.9.0/
+wget http://artbanause.de/mirror/sdcc-2.9.0-i386-unknown-linux2.5.tar.bz2
+tar xjf sdcc-2.9.0-i386-unknown-linux2.5.tar.bz2
+cd sdcc
+sudo  cp -r * /usr/local
+sudo /sbin/ldconfig
+cd ..
+
+
+
+# gnuradio
+git clone http://gnuradio.org/git/gnuradio.git
+
+cd gnuradio
+# patch config/usrp_libusb.m4 .... can't find and install libusb-legacy
+183c183
+<                 [[/* usb_debug = 0 */ ;]])],
+---
+>                 [[usb_debug = 0;]])],
+
+./bootstrap
+./configure 
+make
+make check
+sudo make install
+
+
+export PYTHONPATH=/usr/local/lib64/python2.7/site-packages/
+sudo /sbin/ldconfig
+
+cd ..
+
+#funcube
+git clone https://github.com/csete/gr-fcd.git
+cd gr-fcd
+./bootstrap
+./configure
+make
+sudo make install
+sudo /sbin/ldconfig
+
+       
+# set user rights for funcube
+cat /etc/udev/rules.d/50-usb.rules
+SUBSYSTEMS=="usb" ATTRS{idVendor}=="04d8" ATTRS{idProduct}=="fb56" MODE:="0777" SYMLINK+="FUNcube Dongle"
+
+
+
+ 
